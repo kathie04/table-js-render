@@ -10,7 +10,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let table = document.querySelector('table tbody');
     let checkbox = document.querySelector('.show-completed');
     let showCompleted = checkbox.checked;
-    let taskList = [];
+    let taskList = (getTaskList() ? getTaskList() : []);
+    renderTable(table, taskList, showCompleted)
+
 
 
     checkbox.addEventListener('change', function () {
@@ -35,7 +37,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             let newItem = new Task(this.elements.name.value, this.elements.deadline.value, this.elements.category.value);
             taskList.push(newItem);
-            console.log(taskList);
+            saveTaskList(taskList);
+            taskList = getTaskList();
             renderTable(table, taskList, showCompleted)
             this.elements.name.value = '';
             this.elements.deadline.value = '';
@@ -50,15 +53,27 @@ document.addEventListener('DOMContentLoaded', function() {
             let index = e.target.closest('tr').getAttribute('key');
             var completed = taskList[index].done;
             taskList[index].done = !completed;
+            saveTaskList(taskList);
+            taskList = getTaskList();
             renderTable(table, taskList, showCompleted)
         }
         if (target.closest('.btn-delete')) {
             let index = e.target.closest('tr').getAttribute('key');
-            taskList.splice(index, 1)
+            taskList.splice(index, 1);
+            saveTaskList(taskList);
+            taskList = getTaskList();
             renderTable(table, taskList, showCompleted);
         }
     })
 });
+
+function saveTaskList(array) {
+    localStorage.setItem('taskList', JSON.stringify(array));
+}
+
+function getTaskList() {
+    return JSON.parse(localStorage.getItem('taskList'))
+}
 
 class Task {
     constructor(name, deadline, category) {

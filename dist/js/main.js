@@ -12,7 +12,8 @@ document.addEventListener('DOMContentLoaded', function () {
   var table = document.querySelector('table tbody');
   var checkbox = document.querySelector('.show-completed');
   var showCompleted = checkbox.checked;
-  var taskList = [];
+  var taskList = getTaskList() ? getTaskList() : [];
+  renderTable(table, taskList, showCompleted);
   checkbox.addEventListener('change', function () {
     showCompleted = checkbox.checked;
     renderTable(table, taskList, showCompleted);
@@ -37,7 +38,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
       var newItem = new Task(this.elements.name.value, this.elements.deadline.value, this.elements.category.value);
       taskList.push(newItem);
-      console.log(taskList);
+      saveTaskList(taskList);
+      taskList = getTaskList();
       renderTable(table, taskList, showCompleted);
       this.elements.name.value = '';
       this.elements.deadline.value = '';
@@ -52,6 +54,8 @@ document.addEventListener('DOMContentLoaded', function () {
       var index = e.target.closest('tr').getAttribute('key');
       var completed = taskList[index].done;
       taskList[index].done = !completed;
+      saveTaskList(taskList);
+      taskList = getTaskList();
       renderTable(table, taskList, showCompleted);
     }
 
@@ -59,10 +63,20 @@ document.addEventListener('DOMContentLoaded', function () {
       var _index = e.target.closest('tr').getAttribute('key');
 
       taskList.splice(_index, 1);
+      saveTaskList(taskList);
+      taskList = getTaskList();
       renderTable(table, taskList, showCompleted);
     }
   });
 });
+
+function saveTaskList(array) {
+  localStorage.setItem('taskList', JSON.stringify(array));
+}
+
+function getTaskList() {
+  return JSON.parse(localStorage.getItem('taskList'));
+}
 
 var Task = function Task(name, deadline, category) {
   _classCallCheck(this, Task);
