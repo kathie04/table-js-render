@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', function () {
   var taskList = getTaskList() ? getTaskList() : [];
   var addForm = document.forms[0];
   var editForm = document.forms[1];
+  var sortNameButton = document.querySelector('.sort-name');
+  var sortCategoryButton = document.querySelector('.sort-category');
+  var sortDeadlineButton = document.querySelector('.sort-date');
   renderTable(table, taskList, showCompleted);
   checkbox.addEventListener('change', function () {
     showCompleted = checkbox.checked;
@@ -123,6 +126,34 @@ document.addEventListener('DOMContentLoaded', function () {
     selectEdit = M.FormSelect.init(selectEditItem);
     form.setAttribute('data-index', index);
   }
+
+  sortNameButton.addEventListener('click', function () {
+    if (this.classList.contains('sort-down')) {
+      renderTable(table, taskList, showCompleted, sortArrayByNameDown);
+    } else {
+      renderTable(table, taskList, showCompleted, sortArrayByName);
+    }
+
+    this.classList.toggle('sort-down');
+  });
+  sortCategoryButton.addEventListener('click', function () {
+    if (this.classList.contains('sort-down')) {
+      renderTable(table, taskList, showCompleted, sortArrayByCategoryDown);
+    } else {
+      renderTable(table, taskList, showCompleted, sortArrayByCategory);
+    }
+
+    this.classList.toggle('sort-down');
+  });
+  sortDeadlineButton.addEventListener('click', function () {
+    if (this.classList.contains('sort-down')) {
+      renderTable(table, taskList, showCompleted, sortArrayByDeadlineDown);
+    } else {
+      renderTable(table, taskList, showCompleted, sortArrayByDeadline);
+    }
+
+    this.classList.toggle('sort-down');
+  });
 });
 
 function saveTaskList(array) {
@@ -143,16 +174,17 @@ var Task = function Task(name, deadline, category) {
 };
 
 function renderTable(elem, array, showCompleted) {
+  var sortFunction = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : sortArrayByDeadline;
   clearElement(elem);
-  elem.insertAdjacentHTML('beforeend', createTable(array, showCompleted));
+  elem.insertAdjacentHTML('beforeend', createTable(array, showCompleted, sortFunction));
 }
 
 function clearElement(elem) {
   elem.innerHTML = '';
 }
 
-function createTable(array, showCompleted) {
-  var filterArray = array.filter(function (item) {
+function filterArray(array, showCompleted) {
+  return array.filter(function (item) {
     if (showCompleted) {
       return item;
     } else {
@@ -161,12 +193,68 @@ function createTable(array, showCompleted) {
       }
     }
   });
-  var sortArray = filterArray.sort(function (a, b) {
-    var dateA = new Date(a.deadline),
-        dateB = new Date(b.deadline);
+}
+
+function sortArrayByDeadline(array) {
+  return array.sort(function (a, b) {
+    var dateA = new Date(a.deadline);
+    var dateB = new Date(b.deadline);
     return dateA - dateB;
   });
-  return sortArray.map(function (item, index) {
+}
+
+function sortArrayByDeadlineDown(array) {
+  return array.sort(function (a, b) {
+    var dateA = new Date(a.deadline);
+    var dateB = new Date(b.deadline);
+    return dateB - dateA;
+  });
+}
+
+function sortArrayByName(array) {
+  return array.sort(function (a, b) {
+    var nameA = a.name.toLowerCase();
+    var nameB = b.name.toLowerCase();
+    if (nameA < nameB) return -1;
+    if (nameA > nameB) return 1;
+    return 0;
+  });
+}
+
+function sortArrayByNameDown(array) {
+  return array.sort(function (a, b) {
+    var nameA = a.name.toLowerCase();
+    var nameB = b.name.toLowerCase();
+    if (nameA > nameB) return -1;
+    if (nameA < nameB) return 1;
+    return 0;
+  });
+}
+
+function sortArrayByCategory(array) {
+  return array.sort(function (a, b) {
+    var nameA = a.category.toLowerCase();
+    var nameB = b.category.toLowerCase();
+    if (nameA < nameB) return -1;
+    if (nameA > nameB) return 1;
+    return 0;
+  });
+}
+
+function sortArrayByCategoryDown(array) {
+  return array.sort(function (a, b) {
+    var nameA = a.category.toLowerCase();
+    var nameB = b.category.toLowerCase();
+    if (nameA > nameB) return -1;
+    if (nameA < nameB) return 1;
+    return 0;
+  });
+}
+
+function createTable(array, showCompleted, sortFunction) {
+  var filteredArray = filterArray(array, showCompleted);
+  var sortedArray = sortFunction(filteredArray);
+  return sortedArray.map(function (item, index) {
     var name = item.name,
         deadline = item.deadline,
         category = item.category,

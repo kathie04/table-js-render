@@ -105,6 +105,11 @@ table.table {
       top: 11px;
     }
   }
+  .sortable.sort-down {
+    i {
+      transform: rotate(180deg);
+    }
+  }
 }
 
 @media screen and (max-width: 768px) {
