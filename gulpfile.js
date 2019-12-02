@@ -75,7 +75,7 @@ function css() {
 
 const clean = (done) => {del.sync('dist'); done()};
 
-const build = gulp.series(clean, html, gulp.parallel(css, fonts, scripts, img), browserS);
+const build = gulp.series(clean, html, gulp.parallel(css, fonts, scripts, img));
 
 // function watch() {
 //

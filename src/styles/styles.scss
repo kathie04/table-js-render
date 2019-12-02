@@ -56,6 +56,10 @@ ul.options {
   }
 }
 
+.table-block {
+  overflow-x: auto;
+}
+
 table.table {
   border-collapse: separate;
   border-spacing: 10px;
@@ -92,5 +96,22 @@ table.table {
       opacity: 0.5;
       pointer-events: none;
     }
+  }
+  .sortable {
+    position: relative;
+    padding-right: 15px;
+    i {
+      position: absolute;
+      top: 11px;
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  main {
+    padding: 20px 0;
+  }
+  .container {
+    width: auto;
   }
 }

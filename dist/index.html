@@ -15,7 +15,7 @@
             <div class="col l3 s12">
                 <div class="grey darken-1 center-align form-block">
                     <h3>To Do List</h3>
-                    <form action="">
+                    <form action="" class="add-task">
                         <div class="input-field">
                             <input type="text" placeholder="Task name" name="name" id="name"
                                    class="black-text grey lighten-4"/>
@@ -47,14 +47,14 @@
                 </div>
             </div>
             <div class="col l9 s12">
-                <div class="grey darken-1">
+                <div class="grey darken-1 table-block">
                     <table class="table">
                         <thead>
                         <tr>
                             <th></th>
-                            <th>Category</th>
-                            <th>Task Name</th>
-                            <th>Deadline</th>
+                            <th class="sortable">Category <i class="material-icons small">arrow_drop_down</i></th>
+                            <th class="sortable">Task Name <i class="material-icons small">arrow_drop_down</i></th>
+                            <th class="sortable">Deadline <i class="material-icons small">arrow_drop_down</i></th>
                             <th>Options</th>
                         </tr>
                         </thead>
@@ -66,6 +66,34 @@
         </div>
     </div>
 </main>
+<div class="edit-modal modal" id="modal">
+    <div class="modal-content grey darken-1 center-align">
+        <h4>Edit task</h4>
+        <form action="" class="edit-task" data-index>
+            <div class="input-field">
+                <input type="text" placeholder="Task name" name="name" id="editName"
+                       class="black-text grey lighten-4"/>
+            </div>
+            <div class="input-field">
+                <input type="text"  placeholder="Task deadline" name="deadline"
+                       id="editDeadline" class="black-text grey lighten-4 datepicker" />
+            </div>
+            <div class="input-field">
+                <select name="category" id="editCategory" class="black-text grey lighten-4">
+                    <option value="" disabled selected>Task category</option>
+                    <option value="home">Home</option>
+                    <option value="work">Work</option>
+                    <option value="to-shop-list">To shop list</option>
+                    <option value="to-do-list">To do list</option>
+                </select>
+            </div>
+            <div class="input-field">
+                <button class="btn waves-effect waves-light green modal-close" type="submit" name="action">Edit Task
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 <script src='js/main.js'></script>
 </body>
