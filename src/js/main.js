@@ -23,12 +23,15 @@ document.addEventListener('DOMContentLoaded', function () {
     let table = document.querySelector('table tbody');
     let checkbox = document.querySelector('.show-completed');
     let showCompleted = checkbox.checked;
-    let taskList = (getTaskList() ? getTaskList() : []);
     let addForm = document.forms[0];
     let editForm = document.forms[1];
     let sortNameButton = document.querySelector('.sort-name');
     let sortCategoryButton = document.querySelector('.sort-category');
     let sortDeadlineButton = document.querySelector('.sort-date');
+    let sortFunctionValue = sortArrayByDeadline;
+
+    let taskList = (getTaskList() ? getTaskList() : []);
+
 
     renderTable(table, taskList, showCompleted)
 
@@ -52,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (error) {
                 error.remove();
             }
-            let newItem = new Task(this.elements.name.value, this.elements.deadline.value, this.elements.category.value);
+            let newItem = new Task(this.elements.name.value, this.elements.deadline.value, this.elements.category.value, getNewId(taskList));
             taskList.push(newItem);
             saveTaskList(taskList);
             taskList = getTaskList();
@@ -97,23 +100,36 @@ document.addEventListener('DOMContentLoaded', function () {
     table.addEventListener('click', function (e) {
         let target = e.target;
         if (target.closest('.btn-done')) {
-            let index = e.target.closest('tr').getAttribute('key');
-            var completed = taskList[index].done;
+            let id = e.target.closest('tr').getAttribute('key');
+            let index = taskList.findIndex((item, index) => {
+                if (item.id == id) {
+                    return true
+                }
+            })
+            let completed = taskList[index].done;
             taskList[index].done = !completed;
             saveTaskList(taskList);
             taskList = getTaskList();
             renderTable(table, taskList, showCompleted)
         }
         if (target.closest('.btn-delete')) {
-            let index = e.target.closest('tr').getAttribute('key');
+            let id = e.target.closest('tr').getAttribute('key');
+            let index = taskList.findIndex((item, index) => {
+                if (item.id == id) {
+                    return true
+                }
+            })
             taskList.splice(index, 1);
             saveTaskList(taskList);
             taskList = getTaskList();
             renderTable(table, taskList, showCompleted);
         }
         if (target.closest('.btn-edit')) {
-            let index = e.target.closest('tr').getAttribute('key');
-            fillFields(editForm, taskList[index], index);
+            let id = e.target.closest('tr').getAttribute('key');
+            let item = taskList.filter((item) => {
+                if (item.id == id) return item
+            })[0];
+            fillFields(editForm, item, id);
         }
     })
 
@@ -128,31 +144,50 @@ document.addEventListener('DOMContentLoaded', function () {
 
     sortNameButton.addEventListener('click', function () {
         if (this.classList.contains('sort-down')) {
-            renderTable(table, taskList, showCompleted, sortArrayByNameDown);
+            sortFunctionValue = sortArrayByNameDown;
         } else {
-            renderTable(table, taskList, showCompleted, sortArrayByName);
+            sortFunctionValue = sortArrayByName;
         }
+        renderTable(table, taskList, showCompleted);
         this.classList.toggle('sort-down')
     });
 
     sortCategoryButton.addEventListener('click', function () {
         if (this.classList.contains('sort-down')) {
-            renderTable(table, taskList, showCompleted, sortArrayByCategoryDown);
+            sortFunctionValue = sortArrayByCategoryDown;
         } else {
-            renderTable(table, taskList, showCompleted, sortArrayByCategory);
+            sortFunctionValue = sortArrayByCategory;
         }
         this.classList.toggle('sort-down')
+        renderTable(table, taskList, showCompleted);
     });
 
     sortDeadlineButton.addEventListener('click', function () {
         if (this.classList.contains('sort-down')) {
-            renderTable(table, taskList, showCompleted, sortArrayByDeadlineDown);
+            sortFunctionValue = sortArrayByDeadlineDown;
         } else {
-            renderTable(table, taskList, showCompleted, sortArrayByDeadline);
+            sortFunctionValue = sortArrayByDeadline;
         }
         this.classList.toggle('sort-down')
+        renderTable(table, taskList, showCompleted);
     })
+
+    function renderTable(elem, array, showCompleted, sortFunction = sortFunctionValue) {
+        clearElement(elem)
+        elem.insertAdjacentHTML('beforeend', createTable(array, showCompleted, sortFunction));
+    }
+
 });
+
+function getNewId (array) {
+    let maxId = +array[0].id;
+    array.forEach((item) => {
+        if (+item.id > maxId) {
+            maxId = +item.id
+        }
+    })
+    return (maxId + 1)
+}
 
 function saveTaskList(array) {
     localStorage.setItem('taskList', JSON.stringify(array));
@@ -163,17 +198,13 @@ function getTaskList() {
 }
 
 class Task {
-    constructor(name, deadline, category) {
+    constructor(name, deadline, category, id) {
+        this.id = id;
         this.name = name;
         this.deadline = deadline;
         this.category = category;
         this.done = false;
     }
-}
-
-function renderTable(elem, array, showCompleted, sortFunction = sortArrayByDeadline) {
-    clearElement(elem)
-    elem.insertAdjacentHTML('beforeend', createTable(array, showCompleted, sortFunction));
 }
 
 function clearElement(elem) {
@@ -260,9 +291,9 @@ function createTable(array, showCompleted, sortFunction) {
     let filteredArray = filterArray(array,showCompleted);
     let sortedArray = sortFunction(filteredArray);
     return sortedArray.map((item, index) => {
-        let {name, deadline, category, done} = item;
-        return `<tr ${done ? 'class="completed"' : ''} key=${index}>
-            <td>${index + 1}</td>
+        let {id, name, deadline, category, done} = item;
+        return `<tr ${done ? 'class="completed"' : ''} key=${id}>
+            <td>${index+1}</td>
             <td>${category}</td>
             <td>${name}</td>
             <td>${deadline}</td>

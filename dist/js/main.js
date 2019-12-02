@@ -19,12 +19,13 @@ document.addEventListener('DOMContentLoaded', function () {
   var table = document.querySelector('table tbody');
   var checkbox = document.querySelector('.show-completed');
   var showCompleted = checkbox.checked;
-  var taskList = getTaskList() ? getTaskList() : [];
   var addForm = document.forms[0];
   var editForm = document.forms[1];
   var sortNameButton = document.querySelector('.sort-name');
   var sortCategoryButton = document.querySelector('.sort-category');
   var sortDeadlineButton = document.querySelector('.sort-date');
+  var sortFunctionValue = sortArrayByDeadline;
+  var taskList = getTaskList() ? getTaskList() : [];
   renderTable(table, taskList, showCompleted);
   checkbox.addEventListener('change', function () {
     showCompleted = checkbox.checked;
@@ -48,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
         error.remove();
       }
 
-      var newItem = new Task(this.elements.name.value, this.elements.deadline.value, this.elements.category.value);
+      var newItem = new Task(this.elements.name.value, this.elements.deadline.value, this.elements.category.value, getNewId(taskList));
       taskList.push(newItem);
       saveTaskList(taskList);
       taskList = getTaskList();
@@ -94,7 +95,12 @@ document.addEventListener('DOMContentLoaded', function () {
     var target = e.target;
 
     if (target.closest('.btn-done')) {
-      var index = e.target.closest('tr').getAttribute('key');
+      var id = e.target.closest('tr').getAttribute('key');
+      var index = taskList.findIndex(function (item, index) {
+        if (item.id == id) {
+          return true;
+        }
+      });
       var completed = taskList[index].done;
       taskList[index].done = !completed;
       saveTaskList(taskList);
@@ -103,7 +109,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (target.closest('.btn-delete')) {
-      var _index = e.target.closest('tr').getAttribute('key');
+      var _id = e.target.closest('tr').getAttribute('key');
+
+      var _index = taskList.findIndex(function (item, index) {
+        if (item.id == _id) {
+          return true;
+        }
+      });
 
       taskList.splice(_index, 1);
       saveTaskList(taskList);
@@ -112,9 +124,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (target.closest('.btn-edit')) {
-      var _index2 = e.target.closest('tr').getAttribute('key');
+      var _id2 = e.target.closest('tr').getAttribute('key');
 
-      fillFields(editForm, taskList[_index2], _index2);
+      var item = taskList.filter(function (item) {
+        if (item.id == _id2) return item;
+      })[0];
+      fillFields(editForm, item, _id2);
     }
   });
 
@@ -129,32 +144,51 @@ document.addEventListener('DOMContentLoaded', function () {
 
   sortNameButton.addEventListener('click', function () {
     if (this.classList.contains('sort-down')) {
-      renderTable(table, taskList, showCompleted, sortArrayByNameDown);
+      sortFunctionValue = sortArrayByNameDown;
     } else {
-      renderTable(table, taskList, showCompleted, sortArrayByName);
+      sortFunctionValue = sortArrayByName;
     }
 
+    renderTable(table, taskList, showCompleted);
     this.classList.toggle('sort-down');
   });
   sortCategoryButton.addEventListener('click', function () {
     if (this.classList.contains('sort-down')) {
-      renderTable(table, taskList, showCompleted, sortArrayByCategoryDown);
+      sortFunctionValue = sortArrayByCategoryDown;
     } else {
-      renderTable(table, taskList, showCompleted, sortArrayByCategory);
+      sortFunctionValue = sortArrayByCategory;
     }
 
     this.classList.toggle('sort-down');
+    renderTable(table, taskList, showCompleted);
   });
   sortDeadlineButton.addEventListener('click', function () {
     if (this.classList.contains('sort-down')) {
-      renderTable(table, taskList, showCompleted, sortArrayByDeadlineDown);
+      sortFunctionValue = sortArrayByDeadlineDown;
     } else {
-      renderTable(table, taskList, showCompleted, sortArrayByDeadline);
+      sortFunctionValue = sortArrayByDeadline;
     }
 
     this.classList.toggle('sort-down');
+    renderTable(table, taskList, showCompleted);
   });
+
+  function renderTable(elem, array, showCompleted) {
+    var sortFunction = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : sortFunctionValue;
+    clearElement(elem);
+    elem.insertAdjacentHTML('beforeend', createTable(array, showCompleted, sortFunction));
+  }
 });
+
+function getNewId(array) {
+  var maxId = +array[0].id;
+  array.forEach(function (item) {
+    if (+item.id > maxId) {
+      maxId = +item.id;
+    }
+  });
+  return maxId + 1;
+}
 
 function saveTaskList(array) {
   localStorage.setItem('taskList', JSON.stringify(array));
@@ -164,20 +198,15 @@ function getTaskList() {
   return JSON.parse(localStorage.getItem('taskList'));
 }
 
-var Task = function Task(name, deadline, category) {
+var Task = function Task(name, deadline, category, id) {
   _classCallCheck(this, Task);
 
+  this.id = id;
   this.name = name;
   this.deadline = deadline;
   this.category = category;
   this.done = false;
 };
-
-function renderTable(elem, array, showCompleted) {
-  var sortFunction = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : sortArrayByDeadline;
-  clearElement(elem);
-  elem.insertAdjacentHTML('beforeend', createTable(array, showCompleted, sortFunction));
-}
 
 function clearElement(elem) {
   elem.innerHTML = '';
@@ -255,11 +284,12 @@ function createTable(array, showCompleted, sortFunction) {
   var filteredArray = filterArray(array, showCompleted);
   var sortedArray = sortFunction(filteredArray);
   return sortedArray.map(function (item, index) {
-    var name = item.name,
+    var id = item.id,
+        name = item.name,
         deadline = item.deadline,
         category = item.category,
         done = item.done;
-    return "<tr ".concat(done ? 'class="completed"' : '', " key=").concat(index, ">\n            <td>").concat(index + 1, "</td>\n            <td>").concat(category, "</td>\n            <td>").concat(name, "</td>\n            <td>").concat(deadline, "</td>\n            <td>      \n                <ul class=\"options\">\n                     <li><a href=\"#\" class=\"btn yellow btn-done\"><i class=\"material-icons small\">check</i></a></li>\n                     <li><a href=\"#\" class=\"btn green btn-edit modal-trigger\" data-target=\"modal\"><i class=\"material-icons small\">create</i></a></li>\n                     <li><a href=\"#\" class=\"btn red btn-delete\"><i class=\"material-icons\">clear</i></a></li>\n                </ul>\n             </td>\n             </tr>");
+    return "<tr ".concat(done ? 'class="completed"' : '', " key=").concat(id, ">\n            <td>").concat(index + 1, "</td>\n            <td>").concat(category, "</td>\n            <td>").concat(name, "</td>\n            <td>").concat(deadline, "</td>\n            <td>      \n                <ul class=\"options\">\n                     <li><a href=\"#\" class=\"btn yellow btn-done\"><i class=\"material-icons small\">check</i></a></li>\n                     <li><a href=\"#\" class=\"btn green btn-edit modal-trigger\" data-target=\"modal\"><i class=\"material-icons small\">create</i></a></li>\n                     <li><a href=\"#\" class=\"btn red btn-delete\"><i class=\"material-icons\">clear</i></a></li>\n                </ul>\n             </td>\n             </tr>");
   }).join('');
 }
 //# sourceMappingURL=main.js.map
