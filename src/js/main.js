@@ -180,13 +180,15 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function getNewId (array) {
-    let maxId = +array[0].id;
-    array.forEach((item) => {
-        if (+item.id > maxId) {
-            maxId = +item.id
-        }
-    })
-    return (maxId + 1)
+    if (array.length) {
+        let maxId = +array[0].id;
+        array.forEach((item) => {
+            if (+item.id > maxId) {
+                maxId = +item.id
+            }
+        })
+        return (maxId + 1)
+    } else return 0
 }
 
 function saveTaskList(array) {

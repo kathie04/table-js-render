@@ -181,13 +181,15 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function getNewId(array) {
-  var maxId = +array[0].id;
-  array.forEach(function (item) {
-    if (+item.id > maxId) {
-      maxId = +item.id;
-    }
-  });
-  return maxId + 1;
+  if (array.length) {
+    var maxId = +array[0].id;
+    array.forEach(function (item) {
+      if (+item.id > maxId) {
+        maxId = +item.id;
+      }
+    });
+    return maxId + 1;
+  } else return 0;
 }
 
 function saveTaskList(array) {
