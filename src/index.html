@@ -27,10 +27,6 @@
                         <div class="input-field">
                             <select name="category" id="category" class="black-text grey lighten-4">
                                 <option value="" disabled selected>Task category</option>
-                                <option value="home">Home</option>
-                                <option value="work">Work</option>
-                                <option value="Shop list">Shop list</option>
-                                <option value="To do list">To do list</option>
                             </select>
                         </div>
                         <div class="input-field">
@@ -43,6 +39,14 @@
                             <input type="checkbox" class="filled-in show-completed" checked="checked" />
                             <span>Show done task</span>
                         </label>
+                    </div>
+                    <div class="radio-field left-align">
+                        <p>
+                            <label>
+                                <input class="with-gap" name="category-filter" type="radio" checked value=""/>
+                                <span>All category</span>
+                            </label>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -81,10 +85,6 @@
             <div class="input-field">
                 <select name="category" id="editCategory" class="black-text grey lighten-4">
                     <option value="" disabled selected>Task category</option>
-                    <option value="Home">Home</option>
-                    <option value="Work">Work</option>
-                    <option value="Shop list">Shop list</option>
-                    <option value="To do list">To do list</option>
                 </select>
             </div>
             <div class="input-field">

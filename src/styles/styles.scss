@@ -38,6 +38,14 @@ input[type=text]:not(.browser-default)::placeholder {
   border-color: #4CAF50;
 }
 
+[type="radio"]:checked+span:after, [type="radio"].with-gap:checked+span:before, [type="radio"].with-gap:checked+span:after {
+  border-color: #4CAF50;
+}
+
+[type="radio"]:checked+span:after, [type="radio"].with-gap:checked+span:after {
+  background-color: #4CAF50;
+}
+
 .btn[type='submit'] {
   width: 100%;
 }
@@ -104,6 +112,9 @@ table.table {
       position: absolute;
       top: 11px;
     }
+    &.underline {
+      border-bottom: 2px solid #ffeb3b;
+    }
   }
   .sortable.sort-down {
     i {
@@ -114,6 +125,10 @@ table.table {
 
 .datepicker-calendar-container {
   background: gray;
+}
+
+.modal {
+  overflow-y: initial;
 }
 
 @media screen and (max-width: 768px) {

@@ -7,15 +7,21 @@ document.addEventListener('DOMContentLoaded', function () {
   var datepicker = document.querySelectorAll('.datepicker');
   var instance1 = M.Datepicker.init(datepicker, {
     format: 'mm/dd/yyyy'
-  }); //init materialize select
-
+  });
+  var categoryList = ['Work', 'Home', 'Hometask', 'Shopping'];
   var selectAddItem = document.querySelector('#category');
   var selectEditItem = document.querySelector('#editCategory');
+  createOptionList(selectAddItem, categoryList);
+  createOptionList(selectEditItem, categoryList); //init materialize select
+
   var selectAdd = M.FormSelect.init(selectAddItem);
   var selectEdit = M.FormSelect.init(selectEditItem); //init materialize modal
 
   var modal = document.querySelectorAll('.modal');
   var editModal = M.Modal.init(modal);
+  var radio = document.querySelector('.radio-field');
+  createRadioList(radio, categoryList);
+  var filterCategory = '';
   var table = document.querySelector('table tbody');
   var checkbox = document.querySelector('.show-completed');
   var showCompleted = checkbox.checked;
@@ -29,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
   renderTable(table, taskList, showCompleted);
   checkbox.addEventListener('change', function () {
     showCompleted = checkbox.checked;
-    renderTable(table, taskList, showCompleted);
+    renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory);
   });
   addForm.addEventListener('submit', function (e) {
     var name = this.elements.name.value;
@@ -53,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
       taskList.push(newItem);
       saveTaskList(taskList);
       taskList = getTaskList();
-      renderTable(table, taskList, showCompleted);
+      renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory);
       this.elements.name.value = '';
       this.elements.deadline.value = '';
       this.elements.category.value = '';
@@ -84,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
       taskList[index].category = category;
       saveTaskList(taskList);
       taskList = getTaskList();
-      renderTable(table, taskList, showCompleted);
+      renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory);
       this.elements.name.value = '';
       this.elements.deadline.value = '';
       this.elements.category.value = '';
@@ -106,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function () {
       taskList[index].done = !completed;
       saveTaskList(taskList);
       taskList = getTaskList();
-      renderTable(table, taskList, showCompleted);
+      renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory);
     }
 
     if (target.closest('.btn-delete')) {
@@ -122,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
       taskList.splice(_index, 1);
       saveTaskList(taskList);
       taskList = getTaskList();
-      renderTable(table, taskList, showCompleted);
+      renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory);
     }
 
     if (target.closest('.btn-edit')) {
@@ -133,6 +139,10 @@ document.addEventListener('DOMContentLoaded', function () {
       })[0];
       fillFields(editForm, item, _id2);
     }
+  });
+  radio.addEventListener('change', function () {
+    filterCategory = this.querySelector('input:checked').value;
+    renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory);
   });
 
   function fillFields(form, item, index) {
@@ -145,16 +155,24 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   sortNameButton.addEventListener('click', function () {
+    this.classList.add('underline');
+    sortCategoryButton.classList.remove('underline');
+    sortDeadlineButton.classList.remove('underline');
+
     if (this.classList.contains('sort-down')) {
       sortFunctionValue = sortArrayByNameDown;
     } else {
       sortFunctionValue = sortArrayByName;
     }
 
-    renderTable(table, taskList, showCompleted);
+    renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory);
     this.classList.toggle('sort-down');
   });
   sortCategoryButton.addEventListener('click', function () {
+    this.classList.add('underline');
+    sortNameButton.classList.remove('underline');
+    sortDeadlineButton.classList.remove('underline');
+
     if (this.classList.contains('sort-down')) {
       sortFunctionValue = sortArrayByCategoryDown;
     } else {
@@ -162,9 +180,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     this.classList.toggle('sort-down');
-    renderTable(table, taskList, showCompleted);
+    renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory);
   });
   sortDeadlineButton.addEventListener('click', function () {
+    this.classList.add('underline');
+    sortCategoryButton.classList.remove('underline');
+    sortNameButton.classList.remove('underline');
+
     if (this.classList.contains('sort-down')) {
       sortFunctionValue = sortArrayByDeadlineDown;
     } else {
@@ -172,13 +194,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     this.classList.toggle('sort-down');
-    renderTable(table, taskList, showCompleted);
+    renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory);
   });
 
   function renderTable(elem, array, showCompleted) {
     var sortFunction = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : sortFunctionValue;
+    var filterCategory = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : filterCategory;
     clearElement(elem);
-    elem.insertAdjacentHTML('beforeend', createTable(array, showCompleted, sortFunction));
+    elem.insertAdjacentHTML('beforeend', createTable(array, showCompleted, sortFunction, filterCategory));
   }
 });
 
@@ -224,6 +247,14 @@ function filterArray(array, showCompleted) {
       if (!item.done) {
         return item;
       }
+    }
+  });
+}
+
+function filterByCategory(array, value) {
+  return array.filter(function (item) {
+    if (item.category == value) {
+      return item;
     }
   });
 }
@@ -284,8 +315,14 @@ function sortArrayByCategoryDown(array) {
   });
 }
 
-function createTable(array, showCompleted, sortFunction) {
-  var filteredArray = filterArray(array, showCompleted);
+function createTable(array, showCompleted, sortFunction, filterCategory) {
+  var filteredByCategoryArray = array;
+
+  if (filterCategory) {
+    filteredByCategoryArray = filterByCategory(array, filterCategory);
+  }
+
+  var filteredArray = filterArray(filteredByCategoryArray, showCompleted);
   var sortedArray = sortFunction(filteredArray);
   return sortedArray.map(function (item, index) {
     var id = item.id,
@@ -297,10 +334,23 @@ function createTable(array, showCompleted, sortFunction) {
   }).join('');
 }
 
+function createOptionList(elem, array) {
+  var optionList = array.map(function (item) {
+    return "<option value=".concat(item, ">").concat(item, "</option>");
+  }).join('');
+  elem.insertAdjacentHTML('beforeend', optionList);
+}
+
+function createRadioList(elem, array) {
+  var radioList = array.map(function (item) {
+    return "<p>\n                  <label>\n                    <input class=\"with-gap\" name=\"category-filter\" type=\"radio\" value=".concat(item, ">\n                    <span>").concat(item, "</span>\n                  </label>\n                </p>");
+  }).join('');
+  elem.insertAdjacentHTML('beforeend', radioList);
+} //IE polifill for closest
+
+
 (function () {
-  // проверяем поддержку
   if (!Element.prototype.closest) {
-    // реализуем
     Element.prototype.closest = function (css) {
       var node = this;
 
@@ -311,12 +361,11 @@ function createTable(array, showCompleted, sortFunction) {
       return null;
     };
   }
-})();
+})(); //IE polifill for matches
+
 
 (function () {
-  // проверяем поддержку
   if (!Element.prototype.matches) {
-    // определяем свойство
     Element.prototype.matches = Element.prototype.matchesSelector || Element.prototype.webkitMatchesSelector || Element.prototype.mozMatchesSelector || Element.prototype.msMatchesSelector;
   }
 })();

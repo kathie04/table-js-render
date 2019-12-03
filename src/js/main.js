@@ -7,10 +7,14 @@ document.addEventListener('DOMContentLoaded', function () {
         format: 'mm/dd/yyyy'
     });
 
-    //init materialize select
-
+    let categoryList = ['Work', 'Home', 'Hometask', 'Shopping'];
     let selectAddItem = document.querySelector('#category');
     let selectEditItem = document.querySelector('#editCategory');
+    createOptionList(selectAddItem, categoryList);
+    createOptionList(selectEditItem, categoryList)
+
+
+    //init materialize select
     let selectAdd = M.FormSelect.init(selectAddItem);
     let selectEdit = M.FormSelect.init(selectEditItem);
 
@@ -19,6 +23,9 @@ document.addEventListener('DOMContentLoaded', function () {
     let modal = document.querySelectorAll('.modal');
     let editModal = M.Modal.init(modal);
 
+    let radio = document.querySelector('.radio-field')
+    createRadioList(radio, categoryList);
+    let filterCategory = ''
 
     let table = document.querySelector('table tbody');
     let checkbox = document.querySelector('.show-completed');
@@ -32,12 +39,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let taskList = (getTaskList() ? getTaskList() : []);
 
-
     renderTable(table, taskList, showCompleted)
 
     checkbox.addEventListener('change', function () {
         showCompleted = checkbox.checked;
-        renderTable(table, taskList, showCompleted)
+        renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory)
     })
 
     addForm.addEventListener('submit', function (e) {
@@ -59,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
             taskList.push(newItem);
             saveTaskList(taskList);
             taskList = getTaskList();
-            renderTable(table, taskList, showCompleted)
+            renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory)
             this.elements.name.value = '';
             this.elements.deadline.value = '';
             this.elements.category.value = '';
@@ -89,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
             taskList[index].category = category
             saveTaskList(taskList);
             taskList = getTaskList();
-            renderTable(table, taskList, showCompleted)
+            renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory)
             this.elements.name.value = '';
             this.elements.deadline.value = '';
             this.elements.category.value = '';
@@ -104,27 +110,27 @@ document.addEventListener('DOMContentLoaded', function () {
             let index;
             taskList.forEach((item, i) => {
                 if (item.id == id) {
-                    index  = i;
+                    index = i;
                 }
             })
             let completed = taskList[index].done;
             taskList[index].done = !completed;
             saveTaskList(taskList);
             taskList = getTaskList();
-            renderTable(table, taskList, showCompleted)
+            renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory)
         }
         if (target.closest('.btn-delete')) {
             let id = e.target.closest('tr').getAttribute('key');
             let index
             taskList.forEach((item, i) => {
                 if (item.id == id) {
-                    index  = i;
+                    index = i;
                 }
             })
             taskList.splice(index, 1);
             saveTaskList(taskList);
             taskList = getTaskList();
-            renderTable(table, taskList, showCompleted);
+            renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory);
         }
         if (target.closest('.btn-edit')) {
             let id = e.target.closest('tr').getAttribute('key');
@@ -135,7 +141,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     })
 
-    function fillFields (form, item, index) {
+    radio.addEventListener('change', function () {
+        filterCategory = this.querySelector('input:checked').value;
+        renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory);
+    })
+
+    function fillFields(form, item, index) {
         form.elements.editName.value = item.name;
         form.elements.editDeadline.value = item.deadline;
         form.elements.editCategory.value = item.category;
@@ -145,43 +156,52 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     sortNameButton.addEventListener('click', function () {
+        this.classList.add('underline');
+        sortCategoryButton.classList.remove('underline');
+        sortDeadlineButton.classList.remove('underline');
         if (this.classList.contains('sort-down')) {
             sortFunctionValue = sortArrayByNameDown;
         } else {
             sortFunctionValue = sortArrayByName;
         }
-        renderTable(table, taskList, showCompleted);
+        renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory);
         this.classList.toggle('sort-down')
     });
 
     sortCategoryButton.addEventListener('click', function () {
+        this.classList.add('underline');
+        sortNameButton.classList.remove('underline');
+        sortDeadlineButton.classList.remove('underline');
         if (this.classList.contains('sort-down')) {
             sortFunctionValue = sortArrayByCategoryDown;
         } else {
             sortFunctionValue = sortArrayByCategory;
         }
         this.classList.toggle('sort-down')
-        renderTable(table, taskList, showCompleted);
+        renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory);
     });
 
     sortDeadlineButton.addEventListener('click', function () {
+        this.classList.add('underline');
+        sortCategoryButton.classList.remove('underline');
+        sortNameButton.classList.remove('underline');
         if (this.classList.contains('sort-down')) {
             sortFunctionValue = sortArrayByDeadlineDown;
         } else {
             sortFunctionValue = sortArrayByDeadline;
         }
         this.classList.toggle('sort-down')
-        renderTable(table, taskList, showCompleted);
+        renderTable(table, taskList, showCompleted, sortFunctionValue, filterCategory);
     })
 
-    function renderTable(elem, array, showCompleted, sortFunction = sortFunctionValue) {
+    function renderTable(elem, array, showCompleted, sortFunction = sortFunctionValue, filterCategory = filterCategory) {
         clearElement(elem)
-        elem.insertAdjacentHTML('beforeend', createTable(array, showCompleted, sortFunction));
+        elem.insertAdjacentHTML('beforeend', createTable(array, showCompleted, sortFunction, filterCategory));
     }
 
 });
 
-function getNewId (array) {
+function getNewId(array) {
     if (array.length) {
         let maxId = +array[0].id;
         array.forEach((item) => {
@@ -227,6 +247,14 @@ function filterArray(array, showCompleted) {
     })
 }
 
+function filterByCategory(array, value) {
+    return array.filter((item) => {
+        if (item.category == value) {
+            return item
+        }
+    })
+}
+
 function sortArrayByDeadline(array) {
     return array.sort(function (a, b) {
         let dateA = new Date(a.deadline)
@@ -244,7 +272,7 @@ function sortArrayByDeadlineDown(array) {
 }
 
 function sortArrayByName(array) {
-    return array.sort(function(a, b){
+    return array.sort(function (a, b) {
         let nameA = a.name.toLowerCase();
         let nameB = b.name.toLowerCase();
         if (nameA < nameB)
@@ -256,7 +284,7 @@ function sortArrayByName(array) {
 }
 
 function sortArrayByNameDown(array) {
-    return array.sort(function(a, b){
+    return array.sort(function (a, b) {
         let nameA = a.name.toLowerCase();
         let nameB = b.name.toLowerCase();
         if (nameA > nameB)
@@ -268,7 +296,7 @@ function sortArrayByNameDown(array) {
 }
 
 function sortArrayByCategory(array) {
-    return array.sort(function(a, b){
+    return array.sort(function (a, b) {
         let nameA = a.category.toLowerCase();
         let nameB = b.category.toLowerCase();
         if (nameA < nameB)
@@ -280,7 +308,7 @@ function sortArrayByCategory(array) {
 }
 
 function sortArrayByCategoryDown(array) {
-    return array.sort(function(a, b){
+    return array.sort(function (a, b) {
         let nameA = a.category.toLowerCase();
         let nameB = b.category.toLowerCase();
         if (nameA > nameB)
@@ -291,13 +319,17 @@ function sortArrayByCategoryDown(array) {
     });
 }
 
-function createTable(array, showCompleted, sortFunction) {
-    let filteredArray = filterArray(array,showCompleted);
+function createTable(array, showCompleted, sortFunction, filterCategory) {
+    let filteredByCategoryArray = array;
+    if (filterCategory) {
+        filteredByCategoryArray = filterByCategory(array, filterCategory)
+    }
+    let filteredArray = filterArray(filteredByCategoryArray, showCompleted);
     let sortedArray = sortFunction(filteredArray);
     return sortedArray.map((item, index) => {
         let {id, name, deadline, category, done} = item;
         return `<tr ${done ? 'class="completed"' : ''} key=${id}>
-            <td>${index+1}</td>
+            <td>${index + 1}</td>
             <td>${category}</td>
             <td>${name}</td>
             <td>${deadline}</td>
@@ -312,13 +344,30 @@ function createTable(array, showCompleted, sortFunction) {
     }).join('');
 }
 
-(function() {
+function createOptionList(elem, array) {
+    let optionList = array.map((item) => {
+        return `<option value=${item}>${item}</option>`
+    }).join('')
+    elem.insertAdjacentHTML('beforeend', optionList)
+}
 
-    // проверяем поддержку
+function createRadioList(elem, array) {
+    let radioList = array.map((item) => {
+        return `<p>
+                  <label>
+                    <input class="with-gap" name="category-filter" type="radio" value=${item}>
+                    <span>${item}</span>
+                  </label>
+                </p>`
+    }).join('')
+    elem.insertAdjacentHTML('beforeend', radioList)
+}
+
+//IE polifill for closest
+
+(function () {
     if (!Element.prototype.closest) {
-
-        // реализуем
-        Element.prototype.closest = function(css) {
+        Element.prototype.closest = function (css) {
             var node = this;
 
             while (node) {
@@ -331,17 +380,13 @@ function createTable(array, showCompleted, sortFunction) {
 
 })();
 
-(function() {
+//IE polifill for matches
 
-    // проверяем поддержку
+(function () {
     if (!Element.prototype.matches) {
-
-        // определяем свойство
         Element.prototype.matches = Element.prototype.matchesSelector ||
             Element.prototype.webkitMatchesSelector ||
             Element.prototype.mozMatchesSelector ||
             Element.prototype.msMatchesSelector;
-
     }
-
 })();
