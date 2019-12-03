@@ -96,9 +96,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (target.closest('.btn-done')) {
       var id = e.target.closest('tr').getAttribute('key');
-      var index = taskList.findIndex(function (item, index) {
+      var index;
+      taskList.forEach(function (item, i) {
         if (item.id == id) {
-          return true;
+          index = i;
         }
       });
       var completed = taskList[index].done;
@@ -111,12 +112,13 @@ document.addEventListener('DOMContentLoaded', function () {
     if (target.closest('.btn-delete')) {
       var _id = e.target.closest('tr').getAttribute('key');
 
-      var _index = taskList.findIndex(function (item, index) {
+      var _index;
+
+      taskList.forEach(function (item, i) {
         if (item.id == _id) {
-          return true;
+          _index = i;
         }
       });
-
       taskList.splice(_index, 1);
       saveTaskList(taskList);
       taskList = getTaskList();
@@ -294,4 +296,28 @@ function createTable(array, showCompleted, sortFunction) {
     return "<tr ".concat(done ? 'class="completed"' : '', " key=").concat(id, ">\n            <td>").concat(index + 1, "</td>\n            <td>").concat(category, "</td>\n            <td>").concat(name, "</td>\n            <td>").concat(deadline, "</td>\n            <td>      \n                <ul class=\"options\">\n                     <li><a href=\"#\" class=\"btn yellow btn-done\"><i class=\"material-icons small\">check</i></a></li>\n                     <li><a href=\"#\" class=\"btn green btn-edit modal-trigger\" data-target=\"modal\"><i class=\"material-icons small\">create</i></a></li>\n                     <li><a href=\"#\" class=\"btn red btn-delete\"><i class=\"material-icons\">clear</i></a></li>\n                </ul>\n             </td>\n             </tr>");
   }).join('');
 }
+
+(function () {
+  // проверяем поддержку
+  if (!Element.prototype.closest) {
+    // реализуем
+    Element.prototype.closest = function (css) {
+      var node = this;
+
+      while (node) {
+        if (node.matches(css)) return node;else node = node.parentElement;
+      }
+
+      return null;
+    };
+  }
+})();
+
+(function () {
+  // проверяем поддержку
+  if (!Element.prototype.matches) {
+    // определяем свойство
+    Element.prototype.matches = Element.prototype.matchesSelector || Element.prototype.webkitMatchesSelector || Element.prototype.mozMatchesSelector || Element.prototype.msMatchesSelector;
+  }
+})();
 //# sourceMappingURL=main.js.map

@@ -101,9 +101,10 @@ document.addEventListener('DOMContentLoaded', function () {
         let target = e.target;
         if (target.closest('.btn-done')) {
             let id = e.target.closest('tr').getAttribute('key');
-            let index = taskList.findIndex((item, index) => {
+            let index;
+            taskList.forEach((item, i) => {
                 if (item.id == id) {
-                    return true
+                    index  = i;
                 }
             })
             let completed = taskList[index].done;
@@ -114,9 +115,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         if (target.closest('.btn-delete')) {
             let id = e.target.closest('tr').getAttribute('key');
-            let index = taskList.findIndex((item, index) => {
+            let index
+            taskList.forEach((item, i) => {
                 if (item.id == id) {
-                    return true
+                    index  = i;
                 }
             })
             taskList.splice(index, 1);
@@ -309,3 +311,37 @@ function createTable(array, showCompleted, sortFunction) {
              </tr>`
     }).join('');
 }
+
+(function() {
+
+    // проверяем поддержку
+    if (!Element.prototype.closest) {
+
+        // реализуем
+        Element.prototype.closest = function(css) {
+            var node = this;
+
+            while (node) {
+                if (node.matches(css)) return node;
+                else node = node.parentElement;
+            }
+            return null;
+        };
+    }
+
+})();
+
+(function() {
+
+    // проверяем поддержку
+    if (!Element.prototype.matches) {
+
+        // определяем свойство
+        Element.prototype.matches = Element.prototype.matchesSelector ||
+            Element.prototype.webkitMatchesSelector ||
+            Element.prototype.mozMatchesSelector ||
+            Element.prototype.msMatchesSelector;
+
+    }
+
+})();

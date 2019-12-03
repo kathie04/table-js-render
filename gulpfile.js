@@ -1,17 +1,17 @@
 
-const gulp         = require('gulp'); // gulp
-const sass         = require('gulp-sass'); // compile scss to css
-const imageop      = require('gulp-image-optimization'); // image optimization
-const include      = require('gulp-include'); //
-const browserSync  = require('browser-sync'); // live reload browser
-const imagemin     = require('gulp-imagemin'); // Подключаем библиотеку для работы с изображениями
-const pngquant     = require('imagemin-pngquant'); // Подключаем библиотеку для работы с png
-const debug        = require('gulp-debug');
-const del          = require('del');
-const sourcemaps   = require('gulp-sourcemaps');
-const cleanCSS     = require('gulp-clean-css');
-const autoprefixer = require('gulp-autoprefixer');
-const babel        = require('gulp-babel');
+const gulp           = require('gulp'); // gulp
+const sass           = require('gulp-sass'); // compile scss to css
+const imageop        = require('gulp-image-optimization'); // image optimization
+const include        = require('gulp-include'); //
+const browserSync    = require('browser-sync'); // live reload browser
+const imagemin       = require('gulp-imagemin'); // Подключаем библиотеку для работы с изображениями
+const pngquant       = require('imagemin-pngquant'); // Подключаем библиотеку для работы с png
+const debug          = require('gulp-debug');
+const del            = require('del');
+const sourcemaps     = require('gulp-sourcemaps');
+const cleanCSS       = require('gulp-clean-css');
+const autoprefixer   = require('gulp-autoprefixer');
+const babel          = require('gulp-babel');
 
 function img () {
   return gulp.src('./src/images/**/*') // Берем все изображения из src
