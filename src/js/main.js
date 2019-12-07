@@ -20,8 +20,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     //init materialize modal
 
-    let modal = document.querySelectorAll('.modal');
-    let editModal = M.Modal.init(modal);
+    let modal = document.getElementById('modal');
+    let modalWindow = M.Modal.init(modal);
+    let editModal = M.Modal.getInstance(modal);
 
     let radio = document.querySelector('.radio-field')
     createRadioList(radio, categoryList);
@@ -100,6 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
             this.elements.deadline.value = '';
             this.elements.category.value = '';
             selectEdit = M.FormSelect.init(selectEditItem);
+            editModal.close();
         }
     })
 

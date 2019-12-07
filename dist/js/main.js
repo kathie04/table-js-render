@@ -17,8 +17,9 @@ document.addEventListener('DOMContentLoaded', function () {
   var selectAdd = M.FormSelect.init(selectAddItem);
   var selectEdit = M.FormSelect.init(selectEditItem); //init materialize modal
 
-  var modal = document.querySelectorAll('.modal');
-  var editModal = M.Modal.init(modal);
+  var modal = document.getElementById('modal');
+  var modalWindow = M.Modal.init(modal);
+  var editModal = M.Modal.getInstance(modal);
   var radio = document.querySelector('.radio-field');
   createRadioList(radio, categoryList);
   var filterCategory = '';
@@ -95,6 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
       this.elements.deadline.value = '';
       this.elements.category.value = '';
       selectEdit = M.FormSelect.init(selectEditItem);
+      editModal.close();
     }
   });
   table.addEventListener('click', function (e) {
